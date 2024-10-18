@@ -1,17 +1,19 @@
 'use client';
 
+import { useEffect, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { useAction } from 'next-safe-action/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useEffect, Fragment } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+
+import { User } from '@/features/user/lib/user.schema';
+import { UserSchema } from '@/features/user/lib/user.schema';
+import { saveUserAction } from '@/features/user/lib/user.action';
 
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { InputWithLabel } from '@/components/input-with-label';
-
-import { User } from '@/features/user/lib/user.schema';
-import { saveUser } from '@/features/user/lib/user.action';
-import { UserSchema } from '@/features/user/lib/user.schema';
+import { DisplayServerActionResponse } from '@/components/display-server-action-response';
 
 type UserFormProps = {
   user: User;
@@ -19,8 +21,7 @@ type UserFormProps = {
 
 export const UserForm = ({ user }: UserFormProps) => {
   const router = useRouter();
-  const [message, setMessage] = useState('');
-  const [errors, setErrors] = useState({});
+  const { execute, result, isExecuting } = useAction(saveUserAction);
 
   const form = useForm<User>({
     mode: 'onBlur',
@@ -33,32 +34,14 @@ export const UserForm = ({ user }: UserFormProps) => {
   }, [form.formState.isDirty]);
 
   const onSubmit: SubmitHandler<User> = async (data) => {
-    setErrors({});
-    setMessage('');
-    const result = await saveUser(data);
-
-    if (result?.errors) {
-      setMessage(result.message);
-      setErrors(result.errors);
-      return;
-    } else {
-      setMessage(result.message);
-      router.refresh();
-      form.reset(data);
-    }
+    execute(form.getValues());
+    router.refresh();
+    form.reset(data);
   };
 
   return (
     <Fragment>
-      {message ? <h2 className="text-2xl">{message}</h2> : null}
-
-      {errors ? (
-        <div className="mb-10 text-red-500">
-          {Object.keys(errors).map((key) => (
-            <p key={key}>{`${key}: ${errors[key as keyof typeof errors]}`}</p>
-          ))}
-        </div>
-      ) : null}
+      <DisplayServerActionResponse result={result} />
 
       <Form {...form}>
         <form
@@ -73,7 +56,7 @@ export const UserForm = ({ user }: UserFormProps) => {
           <InputWithLabel label="Email" value="email" />
 
           <div className="mt-4 flex gap-4">
-            <Button>Submit</Button>
+            <Button>{isExecuting ? 'Saving...' : 'Submit'}</Button>
             <Button type="button" variant="destructive" onClick={() => form.reset()}>
               Reset
             </Button>
