@@ -1,4 +1,4 @@
-import { getUsers } from '@/features/user/lib/get-user';
+import { getUsers } from '@/features/user/lib/user.get';
 import { UserRow } from '@/features/user/components/user-row';
 import { BackButton } from '@/components/back-button';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
