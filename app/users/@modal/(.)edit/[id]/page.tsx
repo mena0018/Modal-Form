@@ -1,15 +1,14 @@
+import { routes } from '@/lib/routes';
 import { DialogWrapper } from '@/components/dialog-wrapper';
 import { getUserById } from '@/features/user/lib/user.get';
 import { UserForm } from '@/features/user/components/user-form';
 
 type EditUserProps = {
-  params: {
-    id: string;
-  };
+  params?: unknown;
 };
 
 export default async function EditUser({ params }: EditUserProps) {
-  const { id } = params;
+  const { id } = routes.userEdit.$parseParams(params);
   const user = await getUserById(Number(id));
 
   if (!user?.id) {
