@@ -1,5 +1,6 @@
 'use client';
 
+import { routes } from '@/lib/routes';
 import { useRouter } from 'next/navigation';
 import { User } from '@/features/user/lib/user.schema';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -12,7 +13,7 @@ export const UserRow = ({ user }: UserRowProps) => {
   const { push } = useRouter();
 
   const handleClick = () => {
-    push(`/users/edit/${user.id}`);
+    push(routes.userEdit({ id: user.id.toString() }));
   };
 
   return (
