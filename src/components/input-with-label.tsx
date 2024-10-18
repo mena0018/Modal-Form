@@ -10,7 +10,6 @@ type Props = {
   label: string;
   value: string;
   readOnly?: boolean;
-
   placeholder?: string;
 };
 
@@ -50,7 +49,7 @@ export const InputWithLabel = ({ label, value, placeholder, readOnly }: Props) =
                 size="icon"
                 aria-label="Clear"
                 title="Clear"
-                className="rounded-mdl grid place-content-center text-red-500 hover:bg-transparent hover:text-rose-400"
+                className="rounded-mdl grid place-content-center text-destructive hover:bg-transparent hover:text-destructive/50"
                 onClick={(e) => {
                   e.preventDefault();
                   form.setValue(value, '', { shouldDirty: true });

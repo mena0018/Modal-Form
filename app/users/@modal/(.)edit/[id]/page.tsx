@@ -1,5 +1,5 @@
 import { DialogWrapper } from '@/components/dialog-wrapper';
-import { getUserById } from '@/features/user/lib/get-user';
+import { getUserById } from '@/features/user/lib/user.get';
 import { UserForm } from '@/features/user/components/user-form';
 
 type EditUserProps = {
