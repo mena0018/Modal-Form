@@ -1,28 +1,22 @@
 'use server';
 
 import prisma from '@/prisma/singleton';
-import { User } from '@/features/user/lib/user.schema';
+import { actionClient } from '@/lib/safe-action';
+import { flattenValidationErrors } from 'next-safe-action';
 import { UserSchema } from '@/features/user/lib/user.schema';
 
-type ReturnType = {
-  message: string;
-  errors?: Record<string, unknown>;
-};
-
-export async function saveUser(user: User): Promise<ReturnType> {
-  const userParsed = UserSchema.safeParse(user);
-
-  if (!userParsed.success) {
-    return {
-      message: 'Submission Failed',
-      errors: userParsed.error.flatten().fieldErrors,
-    };
-  }
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: user,
+export const saveUserAction = actionClient
+  .schema(UserSchema, {
+    handleValidationErrorsShape: (ve) => flattenValidationErrors(ve).fieldErrors,
+  })
+  .action(async ({ parsedInput: { id, firstname, lastname, email } }) => {
+    await prisma.user.update({
+      where: { id },
+      data: {
+        firstname,
+        lastname,
+        email,
+      },
+    });
+    return { message: 'User Updated! 🎉' };
   });
-
-  return { message: 'User Updated! 🎉' };
-}

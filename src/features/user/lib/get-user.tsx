@@ -4,6 +4,11 @@ import { User } from '@/features/user/lib/user.schema';
 
 export const getUsers = async (): Promise<User[]> => {
   const users = prisma.user.findMany({ orderBy: { id: 'asc' } });
+
+  if (!users) {
+    notFound();
+  }
+
   return users;
 };
 
