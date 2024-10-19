@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { useEffect, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAction } from 'next-safe-action/hooks';
@@ -11,9 +12,9 @@ import { UserSchema } from '@/features/user/lib/user.schema';
 import { saveUserAction } from '@/features/user/lib/user.action';
 
 import { Form } from '@/components/ui/form';
+import { LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InputWithLabel } from '@/components/input-with-label';
-import { DisplayServerActionResponse } from '@/components/display-server-action-response';
 
 type UserFormProps = {
   user: User;
@@ -21,7 +22,6 @@ type UserFormProps = {
 
 export const UserForm = ({ user }: UserFormProps) => {
   const router = useRouter();
-  const { execute, result, isExecuting } = useAction(saveUserAction);
 
   const form = useForm<User>({
     mode: 'onBlur',
@@ -29,20 +29,27 @@ export const UserForm = ({ user }: UserFormProps) => {
     defaultValues: { ...user },
   });
 
-  useEffect(() => {
-    localStorage.setItem('userFormModified', form.formState.isDirty.toString());
-  }, [form.formState.isDirty]);
+  const { executeAsync, isExecuting } = useAction(saveUserAction, {
+    onSuccess: ({ data }) => {
+      toast.success(data?.message);
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError || error.bindArgsValidationErrors);
+    },
+  });
 
   const onSubmit: SubmitHandler<User> = async (data) => {
-    execute(form.getValues());
+    await executeAsync(data);
     router.refresh();
     form.reset(data);
   };
 
+  useEffect(() => {
+    localStorage.setItem('userFormModified', form.formState.isDirty.toString());
+  }, [form.formState.isDirty]);
+
   return (
     <Fragment>
-      <DisplayServerActionResponse result={result} />
-
       <Form {...form}>
         <form
           onSubmit={(e) => {
@@ -56,7 +63,9 @@ export const UserForm = ({ user }: UserFormProps) => {
           <InputWithLabel label="Email" value="email" />
 
           <div className="mt-4 flex gap-4">
-            <Button>{isExecuting ? 'Saving...' : 'Submit'}</Button>
+            <Button className="min-w-20">
+              {isExecuting ? <LoaderCircle className="animate-spin" size={20} /> : 'Submit'}
+            </Button>
             <Button type="button" variant="destructive" onClick={() => form.reset()}>
               Reset
             </Button>
